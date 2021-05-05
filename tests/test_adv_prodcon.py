@@ -2,23 +2,33 @@
 
 """Tests for `adv_prodcon` package."""
 
-import pytest
+import unittest
+from adv_prodcon import Producer, ReadyQueue
 
 
-from adv_prodcon import adv_prodcon
+class TestWorkers(unittest.TestCase):
+    def test_set_stopped(self):
+        t = MyTestProducer()
+        t.set_subscribers([ReadyQueue()])
+        t.start_new()
+        t.set_stopped()
+        t.process.join()
+        self.assertEqual(t.message, "stopped")
 
 
-@pytest.fixture
-def response():
-    """Sample pytest fixture.
+class MyTestProducer(Producer):
+    def __init__(self):
+        super().__init__()
+        self.message = None
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
-    # import requests
-    # return requests.get('https://github.com/audreyr/cookiecutter-pypackage')
+    @staticmethod
+    def work(shared_var, state, message_pipe, *args):
+        pass
 
+    @staticmethod
+    def on_stop(shared_var, state, message_pipe, *args, **kwargs):
+        message_pipe.send("stopped")
 
-def test_content(response):
-    """Sample pytest test function with the pytest fixture as an argument."""
-    # from bs4 import BeautifulSoup
-    # assert 'GitHub' in BeautifulSoup(response.content).title.string
+    def on_message_ready(self, message):
+        self.message = message
+
