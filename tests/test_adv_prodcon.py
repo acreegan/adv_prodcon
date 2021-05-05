@@ -4,16 +4,24 @@
 
 import unittest
 from adv_prodcon import Producer, ReadyQueue
+import setuptools
+from multiprocessing import freeze_support
+import time
 
 
-class TestWorkers(unittest.TestCase):
-    def test_set_stopped(self):
+class Testadv_prodcon(unittest.TestCase):
+    # def test_set_stopped(self):
+    #     time.sleep(1)
+    #     t = MyTestProducer()
+    #     t.set_subscribers([ReadyQueue()])
+    #     t.start_new()
+    #     t.set_stopped()
+    #     t.process.join()
+    #     self.assertEqual(t.message, "stopped")
+
+    def test_simple_test(self):
         t = MyTestProducer()
-        t.set_subscribers([ReadyQueue()])
-        t.start_new()
-        t.set_stopped()
-        t.process.join()
-        self.assertEqual(t.message, "stopped")
+        self.assertEqual(t.get_state(), t.stopped)
 
 
 class MyTestProducer(Producer):
@@ -32,3 +40,6 @@ class MyTestProducer(Producer):
     def on_message_ready(self, message):
         self.message = message
 
+
+if __name__ == '__main__':
+    freeze_support()

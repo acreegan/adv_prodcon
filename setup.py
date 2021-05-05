@@ -4,13 +4,14 @@
 
 from setuptools import setup, find_packages
 
+
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = []
 
 setup_requirements = []
 
@@ -45,3 +46,8 @@ setup(
     version='0.1.2',
     zip_safe=False,
 )
+
+if __name__ == '__main__':
+    setup(
+        name = "adv_prodcon",
+    )
