@@ -11,6 +11,7 @@ deploy:
   user: andrewcreegan
   password:
     secure: a9uHpebOce/pGjPOKOKptwa6KMnkowIMnltYKh+iAJzinxjJcImw8Gwa6s2S6IlRP9c+D3VBzeHayuAbhsbu/T4gDaZ8/Rfpl+9IIiBVI7ZoTu4iVZ7eq0U1n1xJcMHRvwxZHmyZ0/JYTQ5UEvToSD+kV+L3AmqHVPnAR7TKggKarUNADO/piq6xPGvBAa2JwqXCDE0yzvlKa+3B6NwMwFhTzQ9D26bzfbNUpW7Gjb6rB/5jJlqAVeo2Gw9r5KC8PH+Bs1Mrepu8Xz4zn+p2CKzNVb4jDPMyuUSdj3xUXHXyTGAHHA4NczTZKIq1SBT/GdhaZJrjhCt/YrM/7VQj7Mg+Bm5MrJOZZr3ntprqj+EkhAFDBvpkp++CeyH5p6VFr6x2+mUXPw88FCmEaoEJ13C8aAps0EN4OCVGCaEtQdNwl4nceGK3ba93R1WWJL4BgZqEsTLmbsA/1zBTKWeMtLoR0yv7VbekQPze+GFxGLgVBw9Op+nJ7tb2NBugas8FAJxJlARI6x/IfqAyu6ZKiRZyMuMwcWO70IqxbDcIIlK7iiKcSLnsCatPCp6uaTfPxvjZCo61ewqVvpz5oQKvQnNR1mbSal0i1PIB+tyJ67a5SwD6s4GkogZYJNrl5s08BGDPDlCTvZyIgFLaRp1k1L4h6/rph8+W3H96A0kZ1I4=
+  skip_existing: true
   on:
     tags: true
     repo: acreegan/adv_prodcon
