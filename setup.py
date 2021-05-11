@@ -34,7 +34,6 @@ setup(
     description="Python package implementing a full featured producer/consumer pattern for concurrent workers",
     install_requires=requirements,
     license="MIT license",
-    long_description_content_type='text/markdown',
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='adv_prodcon',
