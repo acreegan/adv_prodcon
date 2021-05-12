@@ -5,6 +5,7 @@ from abc import ABCMeta, abstractmethod
 import atexit
 from queue import Empty
 import ctypes
+import pickle
 
 
 class Worker:
@@ -20,8 +21,8 @@ class Worker:
         self.message_thread = None
         self.work_queues = []
         self.state = Value('i', 1)
-        self.result_pipe_parent, self.result_pipe_child = Pipe()  # Producer and Consumer put results into this pipe
-        self.message_pipe_parent, self.message_pipe_child = Pipe()  # Derived classes have access to this through on_start, on_stop, and work
+        self.result_pipe_parent, self.result_pipe_child = (None, None) # Producer and Consumer put results into this pipe
+        self.message_pipe_parent, self.message_pipe_child = (None, None)  # Derived classes have access to this through on_start, on_stop, and work
         atexit.register(self.set_stopped)
         self.work_timeout = 0
         self.max_buffer_size = 1
@@ -38,6 +39,9 @@ class Worker:
             self.set_stopped()
             while self.process.is_alive():
                 time.sleep(0)
+
+        self.result_pipe_parent, self.result_pipe_child = Pipe()
+        self.message_pipe_parent, self.message_pipe_child = Pipe()
         self.state.value = Worker.started
         self.process = Process(target=self.work_loop,
                                args=(self.work, self.on_start, self.on_stop, self.state, self.work_queues,
@@ -75,7 +79,7 @@ class Worker:
             try:
                 result = self.result_pipe_parent.recv()
                 self.on_result_ready(result)
-            except BrokenPipeError:
+            except (EOFError, AssertionError, pickle.UnpicklingError, BrokenPipeError):
                 return
 
     def wait_on_message_pipe(self):
@@ -83,7 +87,7 @@ class Worker:
             try:
                 message = self.message_pipe_parent.recv()
                 self.on_message_ready(message)
-            except BrokenPipeError:
+            except (EOFError, AssertionError, pickle.UnpicklingError, BrokenPipeError):
                 return
 
     def on_result_ready(self, result):
@@ -131,7 +135,11 @@ class Producer(Worker):
                 sleep_time = max(0, work_timeout - (time.time() - last_worked) - 0.000001)
                 time.sleep(sleep_time)
 
+        result_pipe.close()
+
         on_stop(shared_var, state, message_pipe, *work_args, **work_kwargs)
+        if not message_pipe.closed:
+            message_pipe.close()
 
     @staticmethod
     @abstractmethod
