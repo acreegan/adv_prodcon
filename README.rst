@@ -2,9 +2,6 @@
 Advanced Producer Consumer
 ==========================
 
-
-
-
 .. image:: https://www.travis-ci.com/acreegan/adv_prodcon.svg?branch=main
         :target: https://travis-ci.com/acreegan/adv_prodcon
 
@@ -12,6 +9,9 @@ Advanced Producer Consumer
         :target: https://adv-prodcon.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
+.. image:: https://pyup.io/repos/github/acreegan/adv_prodcon/shield.svg
+     :target: https://pyup.io/repos/github/acreegan/adv_prodcon/shield.svg
+     :alt: Updates
 
 
 Python package implementing a full featured producer/consumer pattern for concurrent workers
