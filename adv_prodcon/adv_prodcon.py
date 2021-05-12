@@ -9,6 +9,9 @@ import pickle
 
 
 class Worker:
+    """
+    Main metaclass for adv_prodcon
+    """
     __metaclass__ = ABCMeta
 
     stopped = 1
@@ -33,6 +36,14 @@ class Worker:
         return self.state.value
 
     def start_new(self, work_args=(), work_kwargs=None):
+        """
+        Start new worker process
+
+        Parameters
+        ----------
+        work_args
+        work_kwargs
+        """
         if work_kwargs is None:
             work_kwargs = {}
         if self.process is not None:
