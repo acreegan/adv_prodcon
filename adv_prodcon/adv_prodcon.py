@@ -10,7 +10,19 @@ import pickle
 
 class Worker:
     """
-    Main metaclass for adv_prodcon
+    The main metaclass for adv_prodcon. Worker should not be used directly. Instead, the Producer and Consumer
+    classes that derive from this should be used as the base for classes that users define.
+
+    Worker defines the methods that are common to both Producer and Consumer. Most importantly it defines the start_new
+    method which handles creation of a new process where the work is run.
+
+    Worker also contains two instances of multiprocessing.Pipe. The result pipe is used by Producer and Consumer to send
+    results from their work functions back to the main process. The message pipe is made available to derived classes by
+    passing it as an argument to the work functions. This allows the work functions to communicate directly with the main
+    process.
+
+    Worker defines three variables that describe the state of a Producer or Consumer's work loop: stopped, started, and
+    stop_at_queue_end
     """
     __metaclass__ = ABCMeta
 
@@ -24,8 +36,8 @@ class Worker:
         self.message_thread = None
         self.work_queues = []
         self.state = Value('i', 1)
-        self.result_pipe_parent, self.result_pipe_child = (None, None) # Producer and Consumer put results into this pipe
-        self.message_pipe_parent, self.message_pipe_child = (None, None)  # Derived classes have access to this through on_start, on_stop, and work
+        self.result_pipe_parent, self.result_pipe_child = (None, None)
+        self.message_pipe_parent, self.message_pipe_child = (None, None)
         atexit.register(self.set_stopped)
         self.work_timeout = 0
         self.max_buffer_size = 1
@@ -33,16 +45,27 @@ class Worker:
         self.work_kwargs = {}
 
     def get_state(self):
+        """
+        Get Worker state
+
+        Returns
+        -------
+        Worker state
+        """
         return self.state.value
 
     def start_new(self, work_args=(), work_kwargs=None):
         """
-        Start new worker process
+        Start a new worker process passing the abstract method work_loop as the target.
+
+        New instances of result_pipe and message_pipe are also created, and new threads are started to wait on them.
 
         Parameters
         ----------
-        work_args
-        work_kwargs
+        work_args: tuple
+            args to pass to the work function
+        work_kwargs: dict
+            kwargs to pass to the work function
         """
         if work_kwargs is None:
             work_kwargs = {}
@@ -67,25 +90,70 @@ class Worker:
     @staticmethod
     @abstractmethod
     def work_loop(*args, **kwargs):
+        """
+        Static method passed as the target for the process in start_new. Implemented by Producer and Consumer.
+
+        Parameters
+        ----------
+        args
+        kwargs
+        """
         pass
 
     @staticmethod
     @abstractmethod
     def work(*args, **kwargs):
+        """
+        Static method representing the actual work function for a class derived from Producer or Consumer
+
+        Parameters
+        ----------
+        args
+        kwargs
+        """
         pass
 
     @staticmethod
     def on_start(state, message_pipe, *args, **kwargs):
+        """
+        Static method representing a function to be called once when a work loop is started.
+
+        Parameters
+        ----------
+        state
+        message_pipe
+        args
+        kwargs
+        """
         pass
 
     @staticmethod
     def on_stop(shared_var, state, message_pipe, *args, **kwargs):
+        """
+        Static method representing a function to be called once when a work loop is stopped.
+
+        Parameters
+        ----------
+        shared_var
+        state
+        message_pipe
+        args
+        kwargs
+        """
         pass
 
     def set_stopped(self):
+        """
+        Stop the work loop by setting the worker state to stopped.
+        """
         self.state.value = Worker.stopped
 
     def wait_on_result_pipe(self):
+        """
+        Loop waiting on data from the result pipe. Calls on_result_ready when data is received.
+
+        Returns when an error occurs (indicating that the paired process has ended).
+        """
         while 1:
             try:
                 result = self.result_pipe_parent.recv()
@@ -94,6 +162,11 @@ class Worker:
                 return
 
     def wait_on_message_pipe(self):
+        """
+        Loop waiting on data from the result pipe. Calls on_message_ready when data is received.
+
+        Returns when an error occurs (indicating that the paired process has ended).
+        """
         while 1:
             try:
                 message = self.message_pipe_parent.recv()
@@ -102,14 +175,36 @@ class Worker:
                 return
 
     def on_result_ready(self, result):
+        """
+        Method that can optionally be overloaded with a callback for when a result is received from the result pipe.
+
+        Parameters
+        ----------
+        result
+        """
         pass
 
     def on_message_ready(self, message):
+        """
+        Method that can optionally be overloaded with a callback for when a message is received from the message pipe.
+
+        Parameters
+        ----------
+        message
+        """
         pass
 
 
-# Make this the interface in case queue item ever needs to be a dict with e.g. a command + the data
 def put_in_queue(queue, data):
+    """
+    An interface to put an item into a Consumer's work queue from the main process. This is defined instead of simply
+    using queue.put in case queue items in adv_prodcon ever need to be wrapped in a dict with the data plus a command.
+
+    Parameters
+    ----------
+    queue
+    data
+    """
     queue.put(data)
 
 
