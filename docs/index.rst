@@ -8,7 +8,7 @@ Welcome to Advanced Producer Consumer's documentation!
    readme
    installation
    usage
-   modules
+   api_reference
    contributing
    authors
    history
