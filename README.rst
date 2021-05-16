@@ -1,5 +1,5 @@
 ==========================
-Advanced Producer Consumer
+Advanced Producer-Consumer
 ==========================
 
 .. image:: https://www.travis-ci.com/acreegan/adv_prodcon.svg?branch=main

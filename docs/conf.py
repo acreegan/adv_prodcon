@@ -43,10 +43,10 @@ templates_path = ['_templates']
 source_suffix = '.rst'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'readme'
 
 # General information about the project.
-project = 'Advanced Producer Consumer'
+project = 'Advanced Producer-Consumer'
 copyright = "2021, Andrew Creegan"
 author = "Andrew Creegan"
 
@@ -130,7 +130,7 @@ latex_elements = {
 # [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'adv_prodcon.tex',
-     'Advanced Producer Consumer Documentation',
+     'Advanced Producer-Consumer Documentation',
      'Andrew Creegan', 'manual'),
 ]
 
@@ -141,7 +141,7 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     (master_doc, 'adv_prodcon',
-     'Advanced Producer Consumer Documentation',
+     'Advanced Producer-Consumer Documentation',
      [author], 1)
 ]
 
@@ -153,7 +153,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'adv_prodcon',
-     'Advanced Producer Consumer Documentation',
+     'Advanced Producer-Consumer Documentation',
      author,
      'adv_prodcon',
      'One line description of project.',
