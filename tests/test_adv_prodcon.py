@@ -10,11 +10,11 @@ import time
 
 class Testadv_prodcon(unittest.TestCase):
     def test_set_stopped(self):
-        time.sleep(1)
         t = MyTestProducer()
         t.set_subscribers([ReadyQueue()])
         t.start_new()
         t.set_stopped()
+        time.sleep(1)
         t.process.join()
         self.assertEqual(t.message, "stopped")
 
