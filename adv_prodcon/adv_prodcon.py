@@ -209,6 +209,10 @@ def put_in_queue(queue, data):
 
 
 class Producer(Worker):
+    """
+    The metaclass defining adv_prodcon's Producer
+
+    """
     __metaclass__ = ABCMeta
 
     def __init__(self, subscriber_queues=None, work_timeout=0):
@@ -218,18 +222,40 @@ class Producer(Worker):
 
     # set_subscribers must be called before start_new
     def set_subscribers(self, subscriber_queues):
+        """
+
+        Parameters
+        ----------
+        subscriber_queues
+        """
         self.work_queues = subscriber_queues
 
     @staticmethod
     def work_loop(work, on_start, on_stop, state, work_queues,
                   work_args, work_kwargs, result_pipe, message_pipe, work_timeout, buffer_size):
+        """
+
+        Parameters
+        ----------
+        work
+        on_start
+        on_stop
+        state
+        work_queues
+        work_args
+        work_kwargs
+        result_pipe
+        message_pipe
+        work_timeout
+        buffer_size
+        """
         # Producer does not make use of the buffer size argument
         assert buffer_size == 1
         shared_var = on_start(state, message_pipe, *work_args, **work_kwargs)
 
         last_worked = time.time()
         while state.value != Worker.stopped:
-            if time.time()-last_worked >= work_timeout:
+            if time.time() - last_worked >= work_timeout:
                 last_worked = time.time()
                 result = work(shared_var, state, message_pipe, *work_args, **work_kwargs)
                 for queue in work_queues:
@@ -255,6 +281,10 @@ class Producer(Worker):
 
 
 class Consumer(Worker):
+    """
+    The metaclass defining adv_prodcon's Consumer.
+
+    """
     def __init__(self, work_timeout=5, max_buffer_size=1, lossy_queue=False, *args, **kwargs):
         super().__init__()
         maxsize = kwargs.pop("maxsize", 0)
@@ -296,7 +326,7 @@ class Consumer(Worker):
                state.value == Worker.stop_at_queue_end:
 
                 last_worked = time.time()
-                results = work(buffer, shared_var, state, message_pipe,  *work_args, **work_kwargs)
+                results = work(buffer, shared_var, state, message_pipe, *work_args, **work_kwargs)
                 buffer = []
                 try:
                     result_pipe.send(results)
@@ -308,7 +338,7 @@ class Consumer(Worker):
                     break
 
         work_queue.set_not_ready()
-        on_stop(shared_var, state, message_pipe,  *work_args, **work_kwargs)
+        on_stop(shared_var, state, message_pipe, *work_args, **work_kwargs)
 
     @staticmethod
     @abstractmethod
@@ -326,6 +356,9 @@ class Consumer(Worker):
 # https://stackoverflow.com/questions/66591320/python-multiprocessing-queue-child-class-losing-attributes-in-process/66607658#66607658
 # There is an issue with making child classes from multiprocessing.queues.queue. This is a workaround
 class ReadyQueue:
+    """
+    A class defining an extended multiprocessing.queues.queue
+    """
     def __init__(self, *args, **kwargs):
         self.lossy = kwargs.pop("lossy", False)
         self.queue = Queue(*args, **kwargs)
@@ -364,4 +397,3 @@ class ReadyQueue:
 
     def qsize(self):
         return self.queue.qsize()
-

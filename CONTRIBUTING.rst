@@ -80,7 +80,7 @@ Ready to contribute? Here's how to set up `adv_prodcon` for local development.
    tests, including testing other Python versions with tox::
 
     $ flake8 adv_prodcon tests
-    $ python setup.py test or pytest
+    $ python -m unittest
     $ tox
 
    To get flake8 and tox, just pip install them into your virtualenv.
@@ -111,7 +111,7 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_adv_prodcon
+$ python -m unittest
 
 
 Deploying

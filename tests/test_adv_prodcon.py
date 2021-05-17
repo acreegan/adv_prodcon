@@ -4,7 +4,6 @@
 
 import unittest
 from adv_prodcon import Producer, ReadyQueue
-import setuptools
 from multiprocessing import freeze_support
 import time
 
