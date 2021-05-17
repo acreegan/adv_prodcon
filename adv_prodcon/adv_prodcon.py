@@ -210,12 +210,20 @@ def put_in_queue(queue, data):
 
 class Producer(Worker):
     """
-    The metaclass defining adv_prodcon's Producer
+    The metaclass defining adv_prodcon's Producer. A Producer is a worker that runs its work function in a loop, and
+    puts the results into each of a list of subscriber Queues.
 
     """
     __metaclass__ = ABCMeta
 
     def __init__(self, subscriber_queues=None, work_timeout=0):
+        """
+
+        Parameters
+        ----------
+        subscriber_queues
+        work_timeout
+        """
         super().__init__()
         self.work_queues = subscriber_queues
         self.work_timeout = work_timeout
@@ -276,16 +284,39 @@ class Producer(Worker):
     @staticmethod
     @abstractmethod
     def work(shared_var, state, message_pipe, *args):
+        """
+
+        Parameters
+        ----------
+        shared_var
+        state
+        message_pipe
+        args
+        """
         # Gets called in loop. Use self.set_stopped() to stop
         pass
 
 
 class Consumer(Worker):
     """
-    The metaclass defining adv_prodcon's Consumer.
+    The metaclass defining adv_prodcon's Consumer. A Consumer is a worker which runs a loop checking for new items in
+    its queue. When the correct criteria are met, Consumer runs its work function with the items from its queue as input.
+
+    The criteria for Consumer to run its work function can be: number of items in the queue, time passed since last work,
+    or state stop_at_queue_end set.
 
     """
     def __init__(self, work_timeout=5, max_buffer_size=1, lossy_queue=False, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        work_timeout
+        max_buffer_size
+        lossy_queue
+        args
+        kwargs
+        """
         super().__init__()
         maxsize = kwargs.pop("maxsize", 0)
         self.work_queues = [ReadyQueue(lossy=lossy_queue, maxsize=maxsize)]
@@ -295,6 +326,13 @@ class Consumer(Worker):
         self.max_buffer_size = max_buffer_size
 
     def start_new(self, work_args=(), work_kwargs=None):
+        """
+
+        Parameters
+        ----------
+        work_args
+        work_kwargs
+        """
         if work_kwargs is None:
             work_kwargs = {}
         self.work_queues[0].set_ready()
@@ -303,6 +341,22 @@ class Consumer(Worker):
     @staticmethod
     def work_loop(work, on_start, on_stop, state, work_queues,
                   work_args, work_kwargs, result_pipe, message_pipe, work_timeout, max_buffer_size):
+        """
+
+        Parameters
+        ----------
+        work
+        on_start
+        on_stop
+        state
+        work_queues
+        work_args
+        work_kwargs
+        result_pipe
+        message_pipe
+        work_timeout
+        max_buffer_size
+        """
         # Consumer only uses one work queue: its own
         assert len(work_queues) == 1
         work_queue = work_queues[0]
@@ -343,13 +397,32 @@ class Consumer(Worker):
     @staticmethod
     @abstractmethod
     def work(items, shared_var, state, message_pipe, *args):
+        """
+
+        Parameters
+        ----------
+        items
+        shared_var
+        state
+        message_pipe
+        args
+        """
         # Gets called in loop. Use self.set_stopped() to stop
         pass
 
     def get_work_queue(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self.work_queues[0]
 
     def set_stop_at_queue_end(self):
+        """
+
+        """
         self.state.value = Worker.stop_at_queue_end
 
 
@@ -357,24 +430,51 @@ class Consumer(Worker):
 # There is an issue with making child classes from multiprocessing.queues.queue. This is a workaround
 class ReadyQueue:
     """
-    A class defining an extended multiprocessing.queues.queue
+    A class defining an extended multiprocessing.queues.queue. ReadyQueue implements an internal state "Ready" which
+    users can check before adding items to it. The queue is cleared when ready is set to false.
+
+    ReadyQueue also implements a "lossy" parameter. When set, if the queue is full, one item will be removed before a
+    new one is placed.
+
     """
     def __init__(self, *args, **kwargs):
+        """
+
+        Parameters
+        ----------
+        args
+        kwargs
+        """
         self.lossy = kwargs.pop("lossy", False)
         self.queue = Queue(*args, **kwargs)
         self._ready = Value(ctypes.c_bool, False)
 
     def set_ready(self):
+        """
+
+        """
         self._ready.value = True
 
     def set_not_ready(self):
+        """
+
+        """
         self._ready.value = False
         self.clear()
 
     def is_ready(self):
+        """
+
+        Returns
+        -------
+
+        """
         return self._ready.value
 
     def clear(self):
+        """
+
+        """
         try:
             while True:
                 self.queue.get(block=False)
@@ -385,6 +485,18 @@ class ReadyQueue:
         return self.queue.get(block, timeout)
 
     def put(self, obj, block=True, timeout=None):
+        """
+
+        Parameters
+        ----------
+        obj
+        block
+        timeout
+
+        Returns
+        -------
+
+        """
         if self.lossy and self.full():
             self.get()
         return self.queue.put(obj, block, timeout)
