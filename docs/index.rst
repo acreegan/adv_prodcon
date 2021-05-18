@@ -4,6 +4,7 @@
 
    self
    installation
+   examples
    usage
    modules
    contributing

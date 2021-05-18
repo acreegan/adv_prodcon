@@ -22,7 +22,7 @@ class Worker:
     process.
 
     Worker defines three variables that describe the state of a Producer or Consumer's work loop: stopped, started, and
-    stop_at_queue_end
+    stop_at_queue_end.
     """
     __metaclass__ = ABCMeta
 
@@ -46,7 +46,7 @@ class Worker:
 
     def get_state(self):
         """
-        Get Worker state
+        Get Worker state.
 
         Returns
         -------
@@ -104,7 +104,7 @@ class Worker:
     @abstractmethod
     def work(*args, **kwargs):
         """
-        Static method representing the actual work function for a class derived from Producer or Consumer
+        Static method representing the actual work function for a class derived from Producer or Consumer.
 
         Parameters
         ----------
@@ -218,6 +218,9 @@ class Producer(Worker):
 
     def __init__(self, subscriber_queues=None, work_timeout=0):
         """
+        Initialize the Producer. subscriber_queues is a list of queues into which the results of the work function
+        should be put. work_timeout specifies the time in seconds between work function calls. If set to 0, the work
+        function will be called as frequently as possible.
 
         Parameters
         ----------
@@ -231,6 +234,7 @@ class Producer(Worker):
     # set_subscribers must be called before start_new
     def set_subscribers(self, subscriber_queues):
         """
+        Set the queues into which the results of the work function should be put. This must be called before start_new.
 
         Parameters
         ----------
@@ -242,6 +246,9 @@ class Producer(Worker):
     def work_loop(work, on_start, on_stop, state, work_queues,
                   work_args, work_kwargs, result_pipe, message_pipe, work_timeout, buffer_size):
         """
+        Runs an infinite loop calling self.work until state is set to stopped. on_start is called at the start and
+        on_stop is called at the end. self.work is called when time since last worked exceeds the work timeout.
+        Results are put into each of the subscriber queues and the result pipe.
 
         Parameters
         ----------
@@ -285,6 +292,7 @@ class Producer(Worker):
     @abstractmethod
     def work(shared_var, state, message_pipe, *args):
         """
+        Static method representing the actual work function for a class derived from Producer.
 
         Parameters
         ----------
@@ -308,6 +316,9 @@ class Consumer(Worker):
     """
     def __init__(self, work_timeout=5, max_buffer_size=1, lossy_queue=False, *args, **kwargs):
         """
+        Initialize the Consumer. work_timeout specifies the time in seconds between work function calls. max_buffer_size
+        specifies the max number of items in the buffer before the work function is called. lossy_queue specifies
+        whether the Consumer's work_queue should be lossy.
 
         Parameters
         ----------
@@ -327,6 +338,8 @@ class Consumer(Worker):
 
     def start_new(self, work_args=(), work_kwargs=None):
         """
+        Extends Worker.start_new by setting the Consumer's work_queue to ready, allowing producers to put items into
+        it.
 
         Parameters
         ----------
@@ -342,6 +355,9 @@ class Consumer(Worker):
     def work_loop(work, on_start, on_stop, state, work_queues,
                   work_args, work_kwargs, result_pipe, message_pipe, work_timeout, max_buffer_size):
         """
+        Runs an infinite loop calling self.work until state is set to stopped. on_start is called at the start and
+        on_stop is called at the end. self.work is called when time since last worked exceeds the work timeout, or
+        len(buffer) exceeds max_buffer_size, or state is set to stop_at_queue_end. Results are put into the result pipe.
 
         Parameters
         ----------
@@ -398,6 +414,7 @@ class Consumer(Worker):
     @abstractmethod
     def work(items, shared_var, state, message_pipe, *args):
         """
+        Static method representing the actual work function for a class derived from Consumer.
 
         Parameters
         ----------
@@ -412,6 +429,7 @@ class Consumer(Worker):
 
     def get_work_queue(self):
         """
+        Gets the Consumer's work_queue.
 
         Returns
         -------
@@ -421,6 +439,7 @@ class Consumer(Worker):
 
     def set_stop_at_queue_end(self):
         """
+        Sets the Consumer's state to stop_at_queue_end.
 
         """
         self.state.value = Worker.stop_at_queue_end
@@ -439,6 +458,8 @@ class ReadyQueue:
     """
     def __init__(self, *args, **kwargs):
         """
+        Initialize the ReadyQueue. self._ready is initialized to false. kwarg "lossy" is used to specify whether the
+        queue should be lossy. args and other kwargs are passed on to the queue.
 
         Parameters
         ----------
@@ -451,12 +472,14 @@ class ReadyQueue:
 
     def set_ready(self):
         """
+        Sets the state to ready.
 
         """
         self._ready.value = True
 
     def set_not_ready(self):
         """
+        Sets the state to not ready and clears the queue.
 
         """
         self._ready.value = False
@@ -464,6 +487,7 @@ class ReadyQueue:
 
     def is_ready(self):
         """
+        Returns self._ready.value.
 
         Returns
         -------
@@ -473,7 +497,7 @@ class ReadyQueue:
 
     def clear(self):
         """
-
+        Clears the queue by calling queue.get until the Empty exception is reached.
         """
         try:
             while True:
@@ -486,6 +510,7 @@ class ReadyQueue:
 
     def put(self, obj, block=True, timeout=None):
         """
+        Puts obj in the queue. If self.lossy is true, calls self.get() first.
 
         Parameters
         ----------

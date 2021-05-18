@@ -26,7 +26,8 @@ class ExampleConsumer(adv_prodcon.Consumer):
 
 if __name__ == "__main__":
     example_producer = ExampleProducer(work_timeout=1)
-    example_consumer = ExampleConsumer(work_timeout=2, max_buffer_size=1000)
+    example_consumer = ExampleConsumer(work_timeout=2,
+                                       max_buffer_size=1000)
 
     example_producer.set_subscribers([example_consumer.get_work_queue()])
     example_producer.start_new()
