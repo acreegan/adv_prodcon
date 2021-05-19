@@ -14,7 +14,7 @@ Advanced Producer-Consumer
      :alt: Updates
 
 
-Advanced Producer-Consumer is a python package implementing a full featured producer-consumer pattern for concurrent workers. This is useful for developing data acquisition programs or programs that involve real-time data processing while maintatining a responsive UI.
+Advanced Producer-Consumer is a python package implementing a full featured producer-consumer pattern for concurrent workers. This is useful for developing data acquisition programs or programs that involve real-time data processing while maintatining a responsive UI. It is compatible with PyQt5, which allows it to be used to develop graphical data acquisition and visualisation applications.
 
 
 * Free software: MIT license
@@ -31,6 +31,7 @@ Features
 * Producers and Consumers have on_start and on_stop functions that can be defined to run code for setup and teardown.
 * Results from Consumers (and Producers) can be accessed in the main process through a user-defined callback.
 * User defined functions can be defined to communicate between the main process and the work functions.
+* Compatible with PyQt5, which allows development of graphical data acquisition and visualisation applications.
 
 Installation
 ------------

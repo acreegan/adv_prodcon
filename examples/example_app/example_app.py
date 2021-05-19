@@ -13,6 +13,31 @@ import math
 
 Ui_MainWindow, QMainWindow = uic.loadUiType("example_app_layout.ui")
 
+
+class DataProducer(adv_prodcon.Producer):
+    @staticmethod
+    def work(shared_var, state, message_pipe, *args):
+        data = (math.sin(time.time()*10) + 1)/2 + random.random()/10
+        timestamp = time.time()
+        return {"data": data, "timestamp": timestamp}
+
+
+# Data consumer acts as a buffer so we can pass new data to our UI process at our leisure
+class DataConsumer(adv_prodcon.Consumer, PyQt5.QtCore.QObject):
+    new_data = PyQt5.QtCore.pyqtSignal(list)
+
+    def __init__(self, *args, **kwargs):
+        PyQt5.QtCore.QObject.__init__(self)
+        adv_prodcon.Consumer.__init__(self, *args, **kwargs)
+
+    @staticmethod
+    def work(items, shared_var, state, message_pipe, *args):
+        return items
+
+    def on_result_ready(self, result):
+        self.new_data.emit(result)
+
+
 plot_config = {
     "num_points": 300
 }
@@ -30,8 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.producer = DataProducer(work_timeout=0.00001)
         self.consumer = DataConsumer(work_timeout=0.01, max_buffer_size=1000, lossy_queue=True)
-        self.saver = DataSaver()
-        self.producer.set_subscribers([self.saver.get_work_queue(), self.consumer.get_work_queue()])
+        self.producer.set_subscribers([self.consumer.get_work_queue()])
 
         self.startButton.clicked.connect(self.start)
         self.stopButton.clicked.connect(self.stop)
@@ -98,37 +122,6 @@ def update_plot(i, data, axes):
     line = axes.plot(data["times"], data["data"])
     axes.set_ylim(0, 1.1)
     return line
-
-
-class DataProducer(adv_prodcon.Producer):
-    @staticmethod
-    def work(shared_var, state, message_pipe, *args):
-        data = (math.sin(time.time()*10) + 1)/2 + random.random()/10
-        timestamp = time.time()
-        return {"data": data, "timestamp": timestamp}
-
-
-# Data consumer acts as a buffer so we can pass new data to our UI process at our leisure
-class DataConsumer(adv_prodcon.Consumer, PyQt5.QtCore.QObject):
-    new_data = PyQt5.QtCore.pyqtSignal(list)
-
-    def __init__(self, *args, **kwargs):
-        PyQt5.QtCore.QObject.__init__(self)
-        adv_prodcon.Consumer.__init__(self, *args, **kwargs)
-
-    @staticmethod
-    def work(items, shared_var, state, message_pipe, *args):
-        return items
-
-    def on_result_ready(self, result):
-        self.new_data.emit(result)
-
-
-class DataSaver(adv_prodcon.Consumer):
-
-    @staticmethod
-    def work(items, shared_var, state, message_pipe, *args):
-        pass
 
 
 if __name__ == '__main__':
