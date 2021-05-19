@@ -128,13 +128,13 @@ class Worker:
         pass
 
     @staticmethod
-    def on_stop(shared_var, state, message_pipe, *args, **kwargs):
+    def on_stop(on_start_result, state, message_pipe, *args, **kwargs):
         """
         Static method representing a function to be called once when a work loop is stopped.
 
         Parameters
         ----------
-        shared_var
+        on_start_result
         state
         message_pipe
         args
@@ -266,13 +266,13 @@ class Producer(Worker):
         """
         # Producer does not make use of the buffer size argument
         assert buffer_size == 1
-        shared_var = on_start(state, message_pipe, *work_args, **work_kwargs)
+        on_start_result = on_start(state, message_pipe, *work_args, **work_kwargs)
 
         last_worked = time.time()
         while state.value != Worker.stopped:
             if time.time() - last_worked >= work_timeout:
                 last_worked = time.time()
-                result = work(shared_var, state, message_pipe, *work_args, **work_kwargs)
+                result = work(on_start_result, state, message_pipe, *work_args, **work_kwargs)
                 for queue in work_queues:
                     if queue.is_ready() and not (queue.full()):
                         queue.put(result)
@@ -284,19 +284,19 @@ class Producer(Worker):
 
         result_pipe.close()
 
-        on_stop(shared_var, state, message_pipe, *work_args, **work_kwargs)
+        on_stop(on_start_result, state, message_pipe, *work_args, **work_kwargs)
         if not message_pipe.closed:
             message_pipe.close()
 
     @staticmethod
     @abstractmethod
-    def work(shared_var, state, message_pipe, *args):
+    def work(on_start_result, state, message_pipe, *args):
         """
         Static method representing the actual work function for a class derived from Producer.
 
         Parameters
         ----------
-        shared_var
+        on_start_result
         state
         message_pipe
         args
@@ -377,7 +377,7 @@ class Consumer(Worker):
         assert len(work_queues) == 1
         work_queue = work_queues[0]
 
-        shared_var = on_start(state, message_pipe, *work_args, **work_kwargs)
+        on_start_result = on_start(state, message_pipe, *work_args, **work_kwargs)
 
         buffer = []
 
@@ -396,7 +396,7 @@ class Consumer(Worker):
                state.value == Worker.stop_at_queue_end:
 
                 last_worked = time.time()
-                results = work(buffer, shared_var, state, message_pipe, *work_args, **work_kwargs)
+                results = work(buffer, on_start_result, state, message_pipe, *work_args, **work_kwargs)
                 buffer = []
                 try:
                     result_pipe.send(results)
@@ -408,18 +408,18 @@ class Consumer(Worker):
                     break
 
         work_queue.set_not_ready()
-        on_stop(shared_var, state, message_pipe, *work_args, **work_kwargs)
+        on_stop(on_start_result, state, message_pipe, *work_args, **work_kwargs)
 
     @staticmethod
     @abstractmethod
-    def work(items, shared_var, state, message_pipe, *args):
+    def work(items, on_start_result, state, message_pipe, *args):
         """
         Static method representing the actual work function for a class derived from Consumer.
 
         Parameters
         ----------
         items
-        shared_var
+        on_start_result
         state
         message_pipe
         args

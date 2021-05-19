@@ -29,11 +29,11 @@ class MyTestProducer(Producer):
         self.message = None
 
     @staticmethod
-    def work(shared_var, state, message_pipe, *args):
+    def work(on_start_result, state, message_pipe, *args):
         pass
 
     @staticmethod
-    def on_stop(shared_var, state, message_pipe, *args, **kwargs):
+    def on_stop(on_start_result, state, message_pipe, *args, **kwargs):
         message_pipe.send("stopped")
 
     def on_message_ready(self, message):

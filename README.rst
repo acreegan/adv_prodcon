@@ -62,17 +62,17 @@ Imports.
          return {"count": count()}
 
      @staticmethod
-     def work(shared_var, state, message_pipe, *args):
-         return next(shared_var["count"])
+     def work(on_start_result, state, message_pipe, *args):
+         return next(on_start_result["count"])
 
-Define a Producer class. Here we are using the on_start method to establish a itertools.count iterator. This is made available in the work function through the shared_var argument. The work function will return the next count each time it is run.
+Define a Producer class. Here we are using the on_start method to establish a itertools.count iterator. This is made available in the work function through the on_start_result argument. The work function will return the next count each time it is run.
 
 .. code-block:: python
 
  class ExampleConsumer(adv_prodcon.Consumer):
 
      @staticmethod
-     def work(items, shared_var, state, message_pipe, *args):
+     def work(items, on_start_result, state, message_pipe, *args):
          return f"Got :{items} from producer"
 
      def on_result_ready(self, result):

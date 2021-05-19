@@ -16,7 +16,7 @@ Ui_MainWindow, QMainWindow = uic.loadUiType("example_app_layout.ui")
 
 class DataProducer(adv_prodcon.Producer):
     @staticmethod
-    def work(shared_var, state, message_pipe, *args):
+    def work(on_start_result, state, message_pipe, *args):
         data = (math.sin(time.time()*10) + 1)/2 + random.random()/10
         timestamp = time.time()
         return {"data": data, "timestamp": timestamp}
@@ -31,7 +31,7 @@ class DataConsumer(adv_prodcon.Consumer, PyQt5.QtCore.QObject):
         adv_prodcon.Consumer.__init__(self, *args, **kwargs)
 
     @staticmethod
-    def work(items, shared_var, state, message_pipe, *args):
+    def work(items, on_start_result, state, message_pipe, *args):
         return items
 
     def on_result_ready(self, result):

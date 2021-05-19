@@ -10,14 +10,14 @@ class ExampleProducer(adv_prodcon.Producer):
         return {"count": count()}
 
     @staticmethod
-    def work(shared_var, state, message_pipe, *args):
-        return next(shared_var["count"])
+    def work(on_start_result, state, message_pipe, *args):
+        return next(on_start_result["count"])
 
 
 class ExampleConsumer(adv_prodcon.Consumer):
 
     @staticmethod
-    def work(items, shared_var, state, message_pipe, *args):
+    def work(items, on_start_result, state, message_pipe, *args):
         return f"Got :{items} from producer"
 
     def on_result_ready(self, result):
